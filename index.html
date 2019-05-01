@@ -84,7 +84,7 @@
         <div id = 'row'>
                      
         </div>
-        <p><span id = "counter">Guesses: 0</span> <span id = "low">Lowest Score: N/A</span></p>
+        <p><span id = "counter">Guesses: 0</span> <span id = "low">Lowest Score: 0</span></p>
 
         <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
@@ -173,25 +173,26 @@
         $(document).ready(function() 
         {
             // model ....
+            let local_model = {};
             let model = {};
-             
+            let game2 = true;
 
             function initializeModel()
             {
-                model.button = [];
-                model.btnClass = 'btnO';
-                model.clickCount = 0;
-                model.size = 6; // variable to change number of buttons 
-                model.game = true;
-                model.num = Math.floor(Math.random() * model.size);
+                local_model.button = [];
+                local_model.btnClass = 'btnO';
+                local_model.clickCount = 0;
+                local_model.size = 6; // variable to change number of buttons 
+                local_model.game = true;
+                local_model.num = Math.floor(Math.random() * local_model.size);
 
                 
-                for(let i = 0; i < model.size; i++)
+                for(let i = 0; i < local_model.size; i++)
                 {
-                    if(i == model.num)
-                        model.button.push({"treasure": true, "flipped": false});
+                    if(i == local_model.num)
+                        local_model.button.push({"treasure": true, "flipped": false});
                     else    
-                        model.button.push({"treasure": false, "flipped": false});
+                        local_model.button.push({"treasure": false, "flipped": false});
                 }
                 
                 sendRequest("whoIsLoggedIn", function()
@@ -216,6 +217,7 @@
                     $("#clearScoreBtn").hide();
                     $("#counter").hide();
                     $("#low").hide();
+                    $("#row").hide();
 
                 }
                 else
@@ -226,31 +228,40 @@
                     $("#registerBtn").hide();
                     $("#counter").show();
                     $("#low").show();
+                    $("#row").show();
+
 
                     if (model.result.email == undefined)
                     {
-                        
+                        $("#counter").html("Guesses: " + local_model.clickCount);
+                        if(model.result.length > 0)
+                            $("#low").html("Lowest Score: " + model.result[0].SCORE_LOW);
+
+                            
                         $("#row").empty();              
-                        for (var i in model.button)
+                        for (var i in local_model.button)
                         {
                             let item = $("<button></button>");
                             item.attr("index", i);
-                            if(model.button[i].treasure == false && model.button[i].flipped == true && model.game == true)
+                            if(local_model.button[i].treasure == false && local_model.button[i].flipped == true && local_model.game == true)
                             {
                                  item.addClass('btnBad');
-                                $("#counter").html("Guesses: " + model.clickCount);
+                                $("#counter").html("Guesses: " + local_model.clickCount);
                             }
-                            else if(model.button[i].treasure == true && model.button[i].flipped == true && model.game == true)
+                            else if(local_model.button[i].treasure == true && local_model.button[i].flipped == true && local_model.game == true)
                             {
                                 item.addClass('btnGood');
-                                $("#counter").html("Guesses: " + model.clickCount);
+                                $("#counter").html("Guesses: " + local_model.clickCount);
                                 
-                                sendRequest("addScore?score="+ model.clickCount, function ()
+                                sendRequest("addScore?score="+ local_model.clickCount, function ()
                                 {
                                     if (model.error == undefined)
                                         sendRequest("listScore");    
                                 });
                                 
+                                $("#low").html("Lowest Score: " + model.result[0].SCORE_LOW);
+                                
+                                local_model.game = false;
                                 $('#confirm').modal('show');
                             }                    
                             
@@ -312,7 +323,8 @@
                 sendRequest("clearScore", function ()
                 {
                     if (model.error == undefined)
-                        sendRequest("listScore");    
+                        sendRequest("listScore");
+                        
                 });
             });
             
@@ -341,13 +353,14 @@
                 
                 $('#registerDlg').modal('hide');
             });
+            
              $(document).on("click",".btnO",function() 
             {
                 let index = $(this).attr("index");
-                if ( model.button[index].flipped == false && model.game == true)
+                if ( local_model.button[index].flipped == false && local_model.game == true)
                 {
-                    model.button[index].flipped = true;
-                    model.clickCount++;
+                    local_model.button[index].flipped = true;
+                    local_model.clickCount++;
                     updateView(); 
                 }
             });
@@ -363,11 +376,14 @@
             $('#no').click(function()
             {
                  $('#confirm').modal('hide');
-                 model.game = false;
+                 game2 = false;
             });
             
+            if(local_model.game == true || game2 == true){
                 initializeModel();
                 updateView();
+            }
+        
             
             // run...
         });

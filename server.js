@@ -60,7 +60,7 @@ function addScore(req,res)
         writeResult(req, res, {'error' : err});
       else
       {
-        con.query('INSERT INTO SCORE (SONG_LOW, USER_ID) VALUES (?, ?)', [req.query.song, req.session.user.result.id], function (err, result, fields) 
+        con.query('INSERT INTO SCORE (SCORE_LOW, USER_ID) VALUES (?, ?)', [req.query.score, req.session.user.result.id], function (err, result, fields) 
         {
           if (err) 
             writeResult(req, res, {'error' : err});
@@ -96,7 +96,7 @@ function listScore(req, res)
       writeResult(req, res, {'error' : err});
     else
     {
-      con.query("SELECT MIN(SCORE_LOW) FROM SCORE WHERE USER_ID = ?", [req.session.user.result.id], function (err, result, fields) 
+      con.query("SELECT MIN(SCORE_LOW) AS SCORE_LOW FROM SCORE WHERE USER_ID = ?", [req.session.user.result.id], function (err, result, fields) 
       {
         if (err) 
           writeResult(req, res, {'error' : err});
@@ -254,7 +254,7 @@ function writeResult(req, res, obj)
   res.writeHead(200, {'Content-Type': 'application/json'});
   res.write(JSON.stringify(obj));
   res.end('');
-}
+} 
 
 function validateEmail(email) 
 {
